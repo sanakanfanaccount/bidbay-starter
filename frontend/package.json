@@ -1,0 +1,30 @@
+{
+  "name": "frontend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "test": "cypress open"
+  },
+  "dependencies": {
+    "jwt-decode": "^3.1.2",
+    "process": "^0.11.10",
+    "util": "^0.12.5",
+    "vue": "^3.2.45",
+    "vue-router": "^4.1.6"
+  },
+  "devDependencies": {
+    "@rushstack/eslint-patch": "^1.1.4",
+    "@vitejs/plugin-vue": "^3.2.0",
+    "@vue/eslint-config-prettier": "^7.0.0",
+    "cypress": "^12.8.1",
+    "eslint": "^8.22.0",
+    "eslint-plugin-cypress": "^2.12.1",
+    "eslint-plugin-vue": "^9.3.0",
+    "prettier": "^2.7.1",
+    "vite": "^3.2.4"
+  }
+}
