@@ -685,13 +685,16 @@ Menu de navigation
 cd frontend/
 npm install
 npm run dev
+# Your frontend server is on localhost:5173
 ```
 
 ### Lancer le backend
 
 ```
 cd backend/
+npm install
 npm start
+# Your backend server is on localhost:3000
 ```
 
 ### Lancer les tests
