@@ -4,12 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "vite",
+    "dev:workaround": "node workaround-server/server.cjs",
     "build": "vite build",
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
     "test": "cypress open"
   },
   "dependencies": {
+    "express": "^4.18.2",
     "jwt-decode": "^3.1.2",
     "process": "^0.11.10",
     "util": "^0.12.5",

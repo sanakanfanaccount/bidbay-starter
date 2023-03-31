@@ -688,6 +688,11 @@ npm run dev
 # Your frontend server is on localhost:5173
 ```
 
+Si jamais votre serveur n'est pas accessible depuis Cypress, vous pouvez tester cette commande
+```
+npm run dev:workaround
+```
+
 ### Lancer le backend
 
 ```
