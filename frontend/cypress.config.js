@@ -7,4 +7,9 @@ module.exports = defineConfig({
     },
     experimentalRunAllSpecs: true,
   },
+  reporter: 'junit',
+  reporterOptions: {
+    mochaFile: 'results/output.xml',
+    toConsole: true,
+  },
 });
