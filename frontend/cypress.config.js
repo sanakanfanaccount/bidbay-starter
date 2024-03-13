@@ -7,9 +7,11 @@ module.exports = defineConfig({
     },
     experimentalRunAllSpecs: true,
   },
-  reporter: 'junit',
+  reporter: 'mochawesome',
   reporterOptions: {
-    mochaFile: 'results/output.xml',
-    toConsole: true,
+    reportDir: 'cypress/results',
+    overwrite: false,
+    html: false,
+    json: true,
   },
 });
