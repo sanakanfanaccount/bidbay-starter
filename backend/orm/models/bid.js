@@ -3,7 +3,7 @@ import { sequelize } from '../database.js'
 
 /**
  * @typedef {Object} BidObject
- * @property {number} id
+ * @property {string} id
  * @property {number} productId
  * @property {number} bidderId
  * @property {number} price

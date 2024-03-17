@@ -3,7 +3,7 @@ import { sequelize } from '../database.js'
 
 /**
  * @typedef {Object} UserObject
- * @property {number} id
+ * @property {string} id
  * @property {string} username
  * @property {string} email
  * @property {string} password
