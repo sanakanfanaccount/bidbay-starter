@@ -707,9 +707,14 @@ npm start
 ```
 cd frontend/
 npm run test
-# OU
+```
+
+### Lancer le reporting des tests
+```
+cd frontend/
 npm run test-report
 ```
+Les fichiers générés doivent être ajoutés dans votre repo
 
 ### Données
 
