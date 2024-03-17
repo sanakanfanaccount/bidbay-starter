@@ -9,6 +9,9 @@ try {
   token.value = null;
 }
 
+/**
+ * @type {import('vue').ComputedRef<Token | null>}
+ */
 const userData = computed(() => {
   if (!token.value) return null;
   return jwtDecode(token.value);
@@ -22,10 +25,19 @@ watch(token, () => {
   }
 });
 
+/**
+ * @type {import('vue').ComputedRef<boolean>}
+ */
 const isAuthenticated = computed(() => userData.value !== null);
 
+/**
+ * @type {import('vue').ComputedRef<boolean>}
+ */
 const isAdmin = computed(() => userData.value !== null && userData.value.admin);
 
+/**
+ * @type {import('vue').ComputedRef<string>}
+ */
 const username = computed(() => userData.value.username);
 
 export function useAuthStore() {
@@ -40,6 +52,9 @@ export function useAuthStore() {
   };
 }
 
+/**
+ * @param {string} _token
+ */
 function login(_token) {
   token.value = _token;
 }

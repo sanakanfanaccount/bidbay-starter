@@ -1,6 +1,18 @@
 import { DataTypes } from 'sequelize'
 import { sequelize } from '../database.js'
 
+/**
+ * @typedef {Object} ProductObject
+ * @property {number} id
+ * @property {string} name
+ * @property {string} description
+ * @property {string} category
+ * @property {number} originalPrice
+ * @property {string} pictureUrl
+ * @property {Date} endDate
+ * @property {number} sellerId
+ */
+
 export default sequelize.define('Product', {
   id: {
     type: DataTypes.UUID,

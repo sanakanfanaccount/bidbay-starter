@@ -1,6 +1,15 @@
 import { DataTypes } from 'sequelize'
 import { sequelize } from '../database.js'
 
+/**
+ * @typedef {Object} BidObject
+ * @property {number} id
+ * @property {number} productId
+ * @property {number} bidderId
+ * @property {number} price
+ * @property {Date} date
+ */
+
 export default sequelize.define('Bid', {
   id: {
     type: DataTypes.UUID,

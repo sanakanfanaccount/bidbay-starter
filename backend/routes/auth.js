@@ -3,15 +3,35 @@ import jwt from 'jsonwebtoken'
 import { JWT_SECRET } from '../consts/secret.js'
 import express from 'express'
 import { getDetails } from '../validators/index.js'
+/**
+ * @typedef {import('../orm/models/user.js')}
+ */
+/**
+ * @typedef {import('../types/types.js')}
+ */
 
 const router = express.Router()
 
-// Endpoint pour la création d'un nouvel utilisateur
+/**
+ * @typedef {object} RegisterRequestBody
+ * @property {string} username
+ * @property {string} email
+ * @property {string} password
+ */
+
+/**
+ * Endpoint pour la création d'un nouvel utilisateur
+ * @param {import('express').Request<{}, {}, RegisterRequestBody>} req
+ * @param {import('express').Response res
+ */
 router.post('/api/auth/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body
+    /** @type {RegisterRequestBody} */
+    const reqBody = req.body
+    const { username, email, password } = reqBody
 
     // Vérifier si l'utilisateur existe déjà
+    /** @type {UserObject | null} */
     const userWithSameEmail = await User.findOne({ where: { email } })
 
     if (userWithSameEmail) {
@@ -19,6 +39,7 @@ router.post('/api/auth/register', async (req, res) => {
     }
 
     // Vérifier si l'utilisateur existe déjà
+    /** @type {UserObject | null} */
     const userWithSameUsername = await User.findOne({
       attributes: ['id', 'username', 'email', 'admin'],
       where: { username }
@@ -29,6 +50,7 @@ router.post('/api/auth/register', async (req, res) => {
     }
 
     // Créer le nouvel utilisateur
+    /** @type {UserObject} */
     const newUser = await User.create({
       username,
       email,
@@ -36,12 +58,14 @@ router.post('/api/auth/register', async (req, res) => {
     })
 
     // Générer un token JWT pour l'authentification future
+    /** @type {Token} */
     const payload = {
       id: newUser.id,
       username,
       email,
       admin: email.endsWith('@admin.org')
     }
+    /** @type {string} */
     const token = jwt.sign(payload, JWT_SECRET)
 
     // Renvoyer l'utilisateur et le token
@@ -51,12 +75,25 @@ router.post('/api/auth/register', async (req, res) => {
   }
 })
 
-// Endpoint pour l'authentification d'un utilisateur enregistré
+/**
+ * @typedef {object} LoginRequestBody
+ * @property {string} email
+ * @property {string} password
+ */
+
+/**
+ * Endpoint pour l'authentification d'un utilisateur enregistré
+ * @param {import('express').Request<{}, {}, LoginRequestBody>} req
+ * @param {import('express').Response res
+ */
 router.post('/api/auth/login', async (req, res) => {
-  const { email, password } = req.body
+  /** @type {LoginRequestBody} */
+  const reqBody = req.body
+  const { email, password } = reqBody
 
   try {
     // Vérifier si l'utilisateur existe
+    /** @type {UserObject | null} */
     const user = await User.findOne({
       where: { email }
     })
@@ -73,12 +110,14 @@ router.post('/api/auth/login', async (req, res) => {
     }
 
     // Générer un token JWT pour l'authentification future
+    /** @type {Token} */
     const payload = {
       id: user.id,
       username: user.username,
       email: user.email,
       admin: user.admin
     }
+    /** @type {string} */
     const token = jwt.sign(payload, JWT_SECRET)
 
     // Renvoyer le token
