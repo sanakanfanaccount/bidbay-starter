@@ -707,6 +707,8 @@ npm start
 ```
 cd frontend/
 npm run test
+# OU
+npm run test-report
 ```
 
 ### Données
