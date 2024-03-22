@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed } from "vue";
+import { ref } from "vue";
 
 const loading = ref(false);
 const error = ref(false);
@@ -9,6 +9,15 @@ async function fetchProducts() {
   error.value = false;
 
   try {
+    const response = await fetch("http://localhost:3000/api/products");
+    const data = await response.json();
+
+    if (!response.ok) {
+      const { error } = data;
+      errorMessage.value = error;
+    } else {
+      products.value = data.products;
+    }
   } catch (e) {
     error.value = true;
   } finally {
