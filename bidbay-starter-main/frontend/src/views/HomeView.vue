@@ -4,6 +4,7 @@ import { ref } from "vue";
 const loading = ref(false);
 const error = ref(false);
 const products = ref([]);
+const sellerNames = ref({});
 
 async function fetchProducts() {
   loading.value = true;
@@ -15,9 +16,13 @@ async function fetchProducts() {
 
     if (!response.ok) {
       throw new Error(data.error);
-    }else{
-    products.value = data;
-    console.error("Data récupéré");
+    } else {
+      products.value = data;
+      for (const product of data) {
+        await fetchName(product.id);
+      }
+
+      console.error("Data récupérée");
     }
   } catch (e) {
     error.value = true;
@@ -27,10 +32,35 @@ async function fetchProducts() {
   }
 }
 
-fetchProducts();
+async function fetchName(link) {
+  loading.value = true;
+  error.value = false;
+
+  try {
+    const response = await fetch("http://localhost:3000/api/products/" + link);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error);
+    } else {
+      const sellerName = data.seller.username;
+      sellerNames.value[link] = sellerName;
+      return sellerName;
+    }
+  } catch (e) {
+    error.value = true;
+    console.error("Une erreur est survenue lors du chargement des données :", e);
+  } finally {
+    loading.value = false;
+  }
+}
+
+fetchProducts(); 
 </script>
 
+
 <template>
+
   <div>
     <h1 class="text-center mb-4">Liste des produits</h1>
 
@@ -83,7 +113,7 @@ fetchProducts();
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div class="row">
-      <div class="col-md-4 mb-4" v-for="item in products" data-test-product :key="i">
+      <div class="col-md-4 mb-4" v-for="item in products">
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: 'TODO' } }">
           <img
@@ -106,9 +136,8 @@ fetchProducts();
               Vendeur :
               <RouterLink
                 data-test-product-seller
-                :to="{ name: 'User', params: { userId: 'TODO' } }"
-              >
-                alice
+                :to="{ name: 'User', params: { userId: 'TODO' } }">
+                {{ sellerNames[item.id] }}
               </RouterLink>
             </p>
             <p class="card-text" data-test-product-date>
