@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 const loading = ref(false);
 const error = ref(false);
+const products = ref([]);
 
 async function fetchProducts() {
   loading.value = true;
@@ -13,13 +14,14 @@ async function fetchProducts() {
     const data = await response.json();
 
     if (!response.ok) {
-      const { error } = data;
-      errorMessage.value = error;
-    } else {
-      products.value = data.products;
+      throw new Error(data.error);
+    }else{
+    products.value = data;
+    console.error("Data récupéré");
     }
   } catch (e) {
     error.value = true;
+    console.error("Une erreur est survenue lors du chargement des produits :", e);
   } finally {
     loading.value = false;
   }
@@ -81,26 +83,24 @@ fetchProducts();
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div class="row">
-      <div class="col-md-4 mb-4" v-for="i in 10" data-test-product :key="i">
+      <div class="col-md-4 mb-4" v-for="item in products" data-test-product :key="i">
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: 'TODO' } }">
-            <img
-              src="https://picsum.photos/id/403/512/512"
-              data-test-product-picture
-              class="card-img-top"
-            />
+          <img
+            :src="item.pictureUrl"
+            data-test-product-picture
+          class="card-img-top"/>
           </RouterLink>
           <div class="card-body">
             <h5 class="card-title">
               <RouterLink
                 data-test-product-name
-                :to="{ name: 'Product', params: { productId: 'TODO' } }"
-              >
-                Machine à écrire
+                :to="{ name: 'Product', params: { productId: 'TODO' } }">
+                {{item.name}}
               </RouterLink>
             </h5>
             <p class="card-text" data-test-product-description>
-              Machine à écrire vintage en parfait état de fonctionnement
+              {{item.description}}
             </p>
             <p class="card-text">
               Vendeur :
@@ -112,7 +112,7 @@ fetchProducts();
               </RouterLink>
             </p>
             <p class="card-text" data-test-product-date>
-              En cours jusqu'au 05/04/2026
+              En cours jusqu'au <br> {{ item.endDate.split('T')[0] }}
             </p>
             <p class="card-text" data-test-product-price>Prix actuel : 42 €</p>
           </div>
