@@ -10,12 +10,17 @@ const router = express.Router()
 
 router.get('/api/products', async (req, res, next) => {
 
-  res.status(200).json(await Product.findAll({}))
+  res.status(200).json(await Product.findAll({include:{all:true}}))
 })
 
 
 router.get('/api/products/:productId', async (req, res) => {
-    res.status(200).json(await Product.findOne({where : {id : req.params.productId}}))
+  let product = await Product.findOne({where : {id : req.params.productId}, include:{all: true,nested: true}})
+  if(product != null){
+    res.status(200).json(product)
+  }else{
+    res.status(404).send()}
+
 })
 
 
@@ -23,6 +28,7 @@ router.get('/api/products/:productId', async (req, res) => {
 
 
 router.post('/api/products', (req, res) => {
+  console.log(req.user.id)
   res.status(600).send()
 })
 
