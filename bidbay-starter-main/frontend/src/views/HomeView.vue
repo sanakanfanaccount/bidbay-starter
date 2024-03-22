@@ -115,7 +115,7 @@ fetchProducts();
     <div class="row">
       <div class="col-md-4 mb-4" v-for="item in products">
         <div class="card">
-          <RouterLink :to="{ name: 'Product', params: { productId: 'TODO' } }">
+          <RouterLink :to="{ name: 'Product', params: { productId: item.id } }">
           <img
             :src="item.pictureUrl"
             data-test-product-picture
@@ -125,7 +125,7 @@ fetchProducts();
             <h5 class="card-title">
               <RouterLink
                 data-test-product-name
-                :to="{ name: 'Product', params: { productId: 'TODO' } }">
+                :to="{ name: 'Product', params: { productId: item.id } }">
                 {{item.name}}
               </RouterLink>
             </h5>
@@ -136,7 +136,7 @@ fetchProducts();
               Vendeur :
               <RouterLink
                 data-test-product-seller
-                :to="{ name: 'User', params: { userId: 'TODO' } }">
+                :to="{ name: 'User', params: { userId: item.seller.id } }">
                 {{ sellerNames[item.id] }}
               </RouterLink>
             </p>
