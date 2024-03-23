@@ -20,7 +20,7 @@ async function addProduct(event) {
 
   const productName = formData.get('productName');
   const productDescription = formData.get('description');
-  const productCategory = formData.get('productCategory');
+  const productCategory = formData.get('category');
   const productOriginalPrice = formData.get('originalPrice');
   const productPictureUrl = formData.get('pictureUrl');
   const productEndDate = formData.get('endDate');
@@ -32,24 +32,30 @@ async function addProduct(event) {
     const response = await fetch("http://localhost:3000/api/products", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+      "Content-Type": "application/json",
+      "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFmMmZhZGIxLTBkN2UtNDdhNy05ZDViLWVkMDMxZDY2NWQzZSIsInVzZXJuYW1lIjoiYWxpY2UiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwiYWRtaW4iOmZhbHNlLCJpYXQiOjE2Nzk2MTMwMzh9.KcT42jbNXfNR-0I-bTc_qNdAuCid640tXpkzUtDCoao`
       },
       body: JSON.stringify({
-        name: productName,
-        description: productDescription,
-        pictureUrl: productPictureUrl,
-        category: productCategory,
-        originalPrice: productOriginalPrice,
-        endDate: productEndDate,
+        "name": productName,
+        "description": productDescription,
+        "pictureUrl": productPictureUrl,
+        "category": productCategory,
+        "originalPrice": productOriginalPrice,
+        "endDate": productEndDate
       }),
     });
+
+	
+
 
     if (!response.ok) {
       const data = await response.json();
       throw new Error(data.error);
+    }else{
+      const product = await response.json();
+      router.push({ name: "Product", params: { productId: product.id } });
     }
 
-    router.push({ name: "Product", params: { productId: 'TODO' } });
   } catch (e) {
     error.value = e.message;
   } finally {
@@ -95,10 +101,13 @@ async function addProduct(event) {
         </div>
 
         <div class="mb-3">
-          <label for="product-category" class="form-label"> Catégorie </label>
+          <label for="product-category" class="form-label"> 
+            Catégorie 
+          </label>
           <input
             type="text"
             class="form-control"
+            name="category"
             id="product-category"
             required
             data-test-product-category
