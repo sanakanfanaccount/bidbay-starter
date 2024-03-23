@@ -6,11 +6,56 @@ import { ref } from "vue";
 const { isAuthenticated, token } = useAuthStore();
 const router = useRouter();
 
+const error = ref(null);
+const isLoading = ref(false);
+
 if (!isAuthenticated.value) {
   router.push({ name: "Login" });
 }
 
-// router.push({ name: "Product", params: { productId: 'TODO } });
+async function addProduct(event) {
+  event.preventDefault();
+
+  const formData = new FormData(event.target);
+
+  const productName = formData.get('productName');
+  const productDescription = formData.get('description');
+  const productCategory = formData.get('productCategory');
+  const productOriginalPrice = formData.get('originalPrice');
+  const productPictureUrl = formData.get('pictureUrl');
+  const productEndDate = formData.get('endDate');
+
+  isLoading.value = true;
+  error.value = null;
+
+  try {
+    const response = await fetch("http://localhost:3000/api/products", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        name: productName,
+        description: productDescription,
+        pictureUrl: productPictureUrl,
+        category: productCategory,
+        originalPrice: productOriginalPrice,
+        endDate: productEndDate,
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      throw new Error(data.error);
+    }
+
+    router.push({ name: "Product", params: { productId: 'TODO' } });
+  } catch (e) {
+    error.value = e.message;
+  } finally {
+    isLoading.value = false;
+  }
+}
 </script>
 
 <template>
@@ -18,29 +63,30 @@ if (!isAuthenticated.value) {
 
   <div class="row justify-content-center">
     <div class="col-md-6">
-      <form>
-        <div class="alert alert-danger mt-4" role="alert" data-test-error>
-          Une erreur s'est produite
+      <form @submit="addProduct">
+        <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
+          {{ error }}
         </div>
 
         <div class="mb-3">
-          <label for="product-name" class="form-label"> Nom du produit </label>
+          <label for="productName" class="form-label"> Nom du produit </label>
           <input
             type="text"
             class="form-control"
-            id="product-name"
+            id="productName"
+            name="productName"
             required
             data-test-product-name
           />
         </div>
 
         <div class="mb-3">
-          <label for="product-description" class="form-label">
+          <label for="productDescription" class="form-label">
             Description
           </label>
           <textarea
             class="form-control"
-            id="product-description"
+            id="productDescription"
             name="description"
             rows="3"
             required
@@ -108,19 +154,19 @@ if (!isAuthenticated.value) {
 
         <div class="d-grid gap-2">
           <button
-            type="submit"
-            class="btn btn-primary"
-            disabled
-            data-test-submit
-          >
-            Ajouter le produit
-            <span
-              data-test-spinner
-              class="spinner-border spinner-border-sm"
-              role="status"
-              aria-hidden="true"
-            ></span>
-          </button>
+  type="submit"
+  class="btn btn-primary"
+  :disabled="isLoading"
+  data-test-submit
+>
+  Ajouter le produit
+  <span v-if="isLoading"
+    data-test-spinner
+    class="spinner-border spinner-border-sm"
+    role="status"
+    aria-hidden="true"
+  ></span>
+</button>
         </div>
       </form>
     </div>
