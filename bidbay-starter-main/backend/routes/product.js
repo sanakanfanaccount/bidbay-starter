@@ -5,7 +5,7 @@ import { getDetails } from '../validators/index.js'
 
 const router = express.Router()
 
-
+router.use(express.json())
 
 
 router.get('/api/products', async (req, res, next) => {
@@ -29,26 +29,52 @@ router.get('/api/products/:productId', async (req, res) => {
 // You can use the authMiddleware with req.user.id to authenticate your endpoint ;)
 
 
-router.post('/api/products',authMiddleware, (req, res, next) => {
-
-
-    res.sendStatus(201);
+router.post('/api/products',authMiddleware, async (req, res, next) =>  {
+  let product = req.body;
+  product.sellerId = req.user.id
+try{
+  let p2 = await Product.create(product)
+  res.status(201).json(p2)
+}
+catch(e){
+    res.status(400).json({ error: "Invalid or missing fields" , details : e}).send()
+}
 
 })
 
 router.put('/api/products/:productId',authMiddleware, async (req, res) => {
 
-  console.log(req.headers)
-  //let product = await Product.findOne({where : {id : req.params.productId}}, {include : {all:true}})
-  //if( product.seller.id  == req.params.Product.User.id){  
-  res.sendStatus(200);
-  //}else{
-    //res.sendStatus(403)
-  //}
+  let product= await Product.findOne({where : {id : req.params.productId}}, {include : {all:true}})
+  
+  if(product == null){
+    res.sendStatus(404)
+  }
+  else{
+  if(product.sellerId  == req.user.id || req.user.admin){
+    await Product.update(req.body,{where : {id : product.id}})
+    res.sendStatus(200);
+  }
+  else{
+    res.sendStatus(403)
+  }
+}  
 })
 
 router.delete('/api/products/:productId',authMiddleware, async (req, res) => {
-    res.sendStatus(200);
+  let product= await Product.findOne({where : {id : req.params.productId}}, {include : {all:true}})
+  
+  if(product == null){
+    res.sendStatus(404)
+  }
+  else{
+  if(product.sellerId  == req.user.id || req.user.admin){
+    await Product.destroy({where : {id : product.id}})
+    res.sendStatus(204);
+  }
+  else{
+    res.sendStatus(403)
+  }
+}
   
 })
 
