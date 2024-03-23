@@ -1,25 +1,79 @@
 <script setup>
-import { ref, computed } from "vue";
-import { useRoute, useRouter, RouterLink } from "vue-router";
-import { useAuthStore } from "../store/auth";
-
-const { isAuthenticated, isAdmin, userData, token } = useAuthStore();
+import { ref } from "vue";
+import { useRoute } from "vue-router";
 
 const route = useRoute();
-const router = useRouter();
-
+const Product = ref({});
 const productId = ref(route.params.productId);
+const countdown = ref("");
+const bids = ref([]);
 
-/**
- * @param {number|string|Date|VarDate} date
- */
 function formatDate(date) {
   const options = { year: "numeric", month: "long", day: "numeric" };
   return new Date(date).toLocaleDateString("fr-FR", options);
 }
+
+async function fetchProducts(link) {
+  try {
+    const response = await fetch("http://localhost:3000/api/products/" + link);
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error);
+    } else {
+      Product.value = data;
+      if (data.bids) {
+        bids.value = data.bids;
+        const bidderNames = await Promise.all(data.bids.map(bid => fetchName(bid.bidderId)));
+        bidderNames.forEach((name, index) => {
+          bids.value[index].bidderName = name;
+        });
+      }
+      updateCountdown(data.endDate);
+    }
+  } catch (e) {
+    console.error("Une erreur est survenue lors du chargement des données :", e);
+  }
+}
+
+async function fetchName(link) {
+  try {
+    const response = await fetch("http://localhost:3000/api/users/" + link);
+    const data = await response.json();
+    return(data.username);
+  } catch (e) {
+    console.error("Une erreur est survenue lors du chargement des données :", e);
+  }
+}
+
+function calculateTimeDifference(endDate) {
+  const now = new Date();
+  const difference = new Date(endDate) - now;
+  if(difference <= 0){return 0}else{
+  const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+  const seconds = Math.floor((difference % (1000 * 60)) / 1000);
+  return { days, hours, minutes, seconds };
+}
+}
+
+function updateCountdown(endDate) {
+  setInterval(() => {
+    const timeDifference = calculateTimeDifference(endDate);
+    if(timeDifference == 0){countdown.value = "Expiré"}else{
+    countdown.value = `${timeDifference.days} jours, ${timeDifference.hours} heures, ${timeDifference.minutes} minutes et ${timeDifference.seconds} secondes`;
+  }
+  }, 1000);
+}
+
+fetchProducts(productId.value);
 </script>
 
+
 <template>
+  
+
   <div class="row">
     <div class="text-center mt-4" data-test-loading>
       <div class="spinner-border" role="status">
@@ -34,7 +88,7 @@ function formatDate(date) {
       <!-- Colonne de gauche : image et compte à rebours -->
       <div class="col-lg-4">
         <img
-          src="https://picsum.photos/id/250/512/512"
+          :src="Product.pictureUrl"
           alt=""
           class="img-fluid rounded mb-3"
           data-test-product-picture
@@ -56,7 +110,7 @@ function formatDate(date) {
         <div class="row">
           <div class="col-lg-6">
             <h1 class="mb-3" data-test-product-name>
-              Appareil photo argentique
+              {{Product.name}}
             </h1>
           </div>
           <div class="col-lg-6 text-end">
@@ -76,21 +130,19 @@ function formatDate(date) {
 
         <h2 class="mb-3">Description</h2>
         <p data-test-product-description>
-          Appareil photo argentique classique, parfait pour les amateurs de
-          photographie
+          {{Product.description}}
         </p>
 
         <h2 class="mb-3">Informations sur l'enchère</h2>
         <ul>
-          <li data-test-product-price>Prix de départ : 17 €</li>
-          <li data-test-product-end-date>Date de fin : 20 juin 2026</li>
+          <li data-test-product-price>Prix de départ : {{Product.originalPrice}} €</li>
+          <li data-test-product-end-date>Date de fin : {{formatDate(Product.endDate)}}</li>
           <li>
             Vendeur :
-            <router-link
-              :to="{ name: 'User', params: { userId: 'TODO' } }"
-              data-test-product-seller
-            >
-              alice
+            <router-link v-if="Product.seller"
+            :to="{ name: 'User', params: { userId: Product.seller.id } }"
+            data-test-product-seller>
+              {{ Product.seller.username }}
             </router-link>
           </li>
         </ul>
@@ -106,22 +158,21 @@ function formatDate(date) {
             </tr>
           </thead>
           <tbody>
-            <tr v-for="i in 10" :key="i" data-test-bid>
+            <tr v-for="(bid, index) in bids" :key="index" data-test-bid>
               <td>
                 <router-link
-                  :to="{ name: 'User', params: { userId: 'TODO' } }"
-                  data-test-bid-bidder
-                >
-                  charly
+                  :to="{ name: 'User', params: { userId: bid.bidderId } }"
+                  data-test-bid-bidder>
+                    {{ bid.bidderName }}
                 </router-link>
               </td>
-              <td data-test-bid-price>43 €</td>
-              <td data-test-bid-date>22 mars 2026</td>
-              <td>
-                <button class="btn btn-danger btn-sm" data-test-delete-bid>
-                  Supprimer
-                </button>
-              </td>
+              <td data-test-bid-price>{{ bid.price }} €</td>
+              <td data-test-bid-date>{{ formatDate(bid.date) }}</td>
+            <td>
+            <button class="btn btn-danger btn-sm" data-test-delete-bid>
+              Supprimer
+            </button>
+            </td>
             </tr>
           </tbody>
         </table>
