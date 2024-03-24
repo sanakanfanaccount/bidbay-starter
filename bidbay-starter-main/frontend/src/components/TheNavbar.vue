@@ -2,7 +2,7 @@
 import { RouterLink } from "vue-router";
 import { useAuthStore } from "../store/auth";
 
-const { isAuthenticated, logout, username } = useAuthStore();
+const { isAuthenticated, logout, username, userData } = useAuthStore();
 </script>
 
 <template>
@@ -22,7 +22,7 @@ const { isAuthenticated, logout, username } = useAuthStore();
           <li class="nav-item" v-if="isAuthenticated">
             <RouterLink
               class="nav-link"
-              :to="{ name: 'User', params: { userId: 'me' } }"
+              :to="{ name: 'User', params: { userId: userData.id } }"
             >
               Mon compte
             </RouterLink>
