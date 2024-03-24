@@ -20,6 +20,7 @@ const filteredProducts = computed(() => {
 
 async function fetchProducts() {
   try {
+    loading.value = true;
     const response = await fetch("http://localhost:3000/api/products");
     const data = await response.json();
 
@@ -98,8 +99,8 @@ function sortProductsByName() {
 
 function sortProductsByPrice() {
   products.value.sort((a, b) => {
-    const priceA = productsOne.value[a.id] ? productsOne.value[a.id].lastBid || a.originalPrice : a.originalPrice;
-    const priceB = productsOne.value[b.id] ? productsOne.value[b.id].lastBid || b.originalPrice : b.originalPrice;
+    const priceA = productsOne.value[a.id].lastBid;
+    const priceB = productsOne.value[b.id].lastBid;
     sorterLabel.value = "prix";
     return priceA - priceB;
   });
@@ -154,13 +155,13 @@ fetchProducts();
       </div>
     </div>
 
-    <div class="text-center mt-4" data-test-loading>
+    <div v-if="loading" class="text-center mt-4" data-test-loading>
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Chargement...</span>
       </div>
     </div>
 
-    <div class="alert alert-danger mt-4" role="alert" data-test-error>
+    <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div class="row">
