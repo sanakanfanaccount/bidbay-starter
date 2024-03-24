@@ -4,12 +4,11 @@ import { ref } from "vue";
 const loading = ref(false);
 const error = ref(false);
 const products = ref([]);
-const sellerNames = ref({});
+const productsOne = ref({});
+
+// récuperation de tout les produits
 
 async function fetchProducts() {
-  loading.value = true;
-  error.value = false;
-
   try {
     const response = await fetch("http://localhost:3000/api/products");
     const data = await response.json();
@@ -21,7 +20,6 @@ async function fetchProducts() {
       for (const product of data) {
         await fetchName(product.id);
       }
-
       console.error("Data récupérée");
     }
   } catch (e) {
@@ -32,10 +30,9 @@ async function fetchProducts() {
   }
 }
 
-async function fetchName(link) {
-  loading.value = true;
-  error.value = false;
+// récupère les produits un par un
 
+async function fetchName(link) {
   try {
     const response = await fetch("http://localhost:3000/api/products/" + link);
     const data = await response.json();
@@ -43,9 +40,11 @@ async function fetchName(link) {
     if (!response.ok) {
       throw new Error(data.error);
     } else {
-      const sellerName = data.seller.username;
-      sellerNames.value[link] = sellerName;
-      return sellerName;
+      productsOne.value[link] = data;
+      const sellerUsername = data.seller.username;
+      const lastBid = await fetchLastBid(link);
+      productsOne.value[link].lastBid = lastBid;
+      return sellerUsername;
     }
   } catch (e) {
     error.value = true;
@@ -53,6 +52,40 @@ async function fetchName(link) {
   } finally {
     loading.value = false;
   }
+}
+
+// leurs dernier bid
+
+async function fetchLastBid(productId) {
+    const product = productsOne.value[productId];
+    if (!product || !product.bids || product.bids.length === 0) {
+        return product.originalPrice;
+    } else {
+        const sortedBids = product.bids.sort((a, b) => b.price - a.price);
+        return sortedBids[0] ? sortedBids[0].price : null;
+    }
+}
+
+// sort par nom
+
+function sortProductsByName() {
+  products.value.sort((a, b) => {
+    const nameA = a.name.toUpperCase();
+    const nameB = b.name.toUpperCase();
+    if (nameA < nameB) {
+      return -1;
+    }
+    if (nameA > nameB) {
+      return 1;
+    }
+    return 0;
+  });
+}
+
+// sort par prix
+
+function sortProductsByPrice() {
+  products.value.sort((a, b) => a.price - b.price);
 }
 
 fetchProducts(); 
@@ -79,28 +112,28 @@ fetchProducts();
         </form>
       </div>
       <div class="col-md-6 text-end">
-        <div class="btn-group">
-          <button
-            type="button"
-            class="btn btn-primary dropdown-toggle"
-            data-bs-toggle="dropdown"
-            aria-expanded="false"
-            data-test-sorter
-          >
-            Trier par nom
-          </button>
-          <ul class="dropdown-menu dropdown-menu-end">
-            <li>
-              <a class="dropdown-item" href="#"> Nom </a>
-            </li>
-            <li>
-              <a class="dropdown-item" href="#" data-test-sorter-price>
-                Prix
-              </a>
-            </li>
-          </ul>
-        </div>
-      </div>
+  <div class="btn-group">
+    <button
+      type="button"
+      class="btn btn-primary dropdown-toggle"
+      data-bs-toggle="dropdown"
+      aria-expanded="false"
+      data-test-sorter
+    >
+      Trier par nom
+    </button>
+    <ul class="dropdown-menu dropdown-menu-end">
+      <li>
+        <a class="dropdown-item" href="#" @click="sortProductsByName"> Nom </a>
+      </li>
+      <li>
+        <a class="dropdown-item" href="#" @click="sortProductsByPrice" data-test-sorter-price>
+          Prix
+        </a>
+      </li>
+    </ul>
+  </div>
+</div>
     </div>
 
     <div class="text-center mt-4" data-test-loading>
@@ -137,13 +170,13 @@ fetchProducts();
               <RouterLink
                 data-test-product-seller
                 :to="{ name: 'User', params: { userId: item.seller.id } }">
-                {{ sellerNames[item.id] }}
+                {{ productsOne[item.id] ? productsOne[item.id].seller.username : 'Chargement...' }}
               </RouterLink>
             </p>
             <p class="card-text" data-test-product-date>
               En cours jusqu'au <br> {{ item.endDate.split('T')[0] }}
             </p>
-            <p class="card-text" data-test-product-price>Prix actuel : 42 €</p>
+            <p class="card-text" data-test-product-price>Prix actuel : {{ productsOne[item.id] ? productsOne[item.id].lastBid : 'Chargement...' }} €</p>
           </div>
         </div>
       </div>
