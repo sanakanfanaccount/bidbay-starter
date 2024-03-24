@@ -8,6 +8,9 @@ const productId = ref(route.params.productId);
 const countdown = ref("");
 const bids = ref([]);
 
+const loading = ref(false);
+const error = ref(false);
+
 function formatDate(date) {
   const options = { year: "numeric", month: "long", day: "numeric" };
   return new Date(date).toLocaleDateString("fr-FR", options);
@@ -16,6 +19,7 @@ function formatDate(date) {
 
 async function fetchProducts(link) {
   try {
+    loading.value = true;
     const response = await fetch("http://localhost:3000/api/products/" + link);
     const data = await response.json();
 
@@ -33,7 +37,10 @@ async function fetchProducts(link) {
       updateCountdown(data.endDate);
     }
   } catch (e) {
+    error.value = true;
     console.error("Une erreur est survenue lors du chargement des données :", e);
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -76,13 +83,13 @@ fetchProducts(productId.value);
   
 
   <div class="row">
-    <div class="text-center mt-4" data-test-loading>
+    <div v-if="loading" class="text-center mt-4" data-test-loading>
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Chargement...</span>
       </div>
     </div>
 
-    <div class="alert alert-danger mt-4" role="alert" data-test-error>
+    <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div class="row" data-test-product>
@@ -116,7 +123,7 @@ fetchProducts(productId.value);
           </div>
           <div class="col-lg-6 text-end">
             <RouterLink
-              :to="{ name: 'ProductEdition', params: { productId: 'TODO' } }"
+              :to="{ name: 'ProductEdition', params: { productId: Product.id } }"
               class="btn btn-primary"
               data-test-edit-product
             >
