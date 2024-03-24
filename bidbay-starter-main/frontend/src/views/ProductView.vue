@@ -13,6 +13,7 @@ function formatDate(date) {
   return new Date(date).toLocaleDateString("fr-FR", options);
 }
 
+
 async function fetchProducts(link) {
   try {
     const response = await fetch("http://localhost:3000/api/products/" + link);
@@ -62,7 +63,7 @@ function updateCountdown(endDate) {
   setInterval(() => {
     const timeDifference = calculateTimeDifference(endDate);
     if(timeDifference == 0){countdown.value = "Expiré"}else{
-    countdown.value = `${timeDifference.days} jours, ${timeDifference.hours} heures, ${timeDifference.minutes} minutes et ${timeDifference.seconds} secondes`;
+    countdown.value = `${timeDifference.days}j, ${timeDifference.hours}h, ${timeDifference.minutes}h, ${timeDifference.seconds}s`;
   }
   }, 1000);
 }

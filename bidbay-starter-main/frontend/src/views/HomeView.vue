@@ -1,10 +1,20 @@
 <script setup>
-import { ref } from "vue";
+import { ref, computed } from "vue";
 
 const loading = ref(false);
 const error = ref(false);
 const products = ref([]);
 const productsOne = ref({});
+const sorterLabel = ref("nom");
+const searchQuery = ref("");
+
+
+const filteredProducts = computed(() => {
+  const searchTerm = searchQuery.value.toLowerCase();
+  return products.value.filter(product => {
+    return product.name.toLowerCase().includes(searchTerm);
+  });
+});
 
 // récuperation de tout les produits
 
@@ -21,6 +31,7 @@ async function fetchProducts() {
         await fetchName(product.id);
       }
       console.error("Data récupérée");
+      sortProductsByName()
     }
   } catch (e) {
     error.value = true;
@@ -69,6 +80,7 @@ async function fetchLastBid(productId) {
 // sort par nom
 
 function sortProductsByName() {
+  sorterLabel.value = "nom";
   products.value.sort((a, b) => {
     const nameA = a.name.toUpperCase();
     const nameB = b.name.toUpperCase();
@@ -85,7 +97,12 @@ function sortProductsByName() {
 // sort par prix
 
 function sortProductsByPrice() {
-  products.value.sort((a, b) => a.price - b.price);
+  products.value.sort((a, b) => {
+    const priceA = productsOne.value[a.id] ? productsOne.value[a.id].lastBid || a.originalPrice : a.originalPrice;
+    const priceB = productsOne.value[b.id] ? productsOne.value[b.id].lastBid || b.originalPrice : b.originalPrice;
+    sorterLabel.value = "prix";
+    return priceA - priceB;
+  });
 }
 
 fetchProducts(); 
@@ -107,33 +124,34 @@ fetchProducts();
               class="form-control"
               placeholder="Filtrer par nom"
               data-test-filter
+              v-model="searchQuery"
             />
           </div>
         </form>
       </div>
       <div class="col-md-6 text-end">
-  <div class="btn-group">
-    <button
-      type="button"
-      class="btn btn-primary dropdown-toggle"
-      data-bs-toggle="dropdown"
-      aria-expanded="false"
-      data-test-sorter
-    >
-      Trier par nom
-    </button>
-    <ul class="dropdown-menu dropdown-menu-end">
-      <li>
-        <a class="dropdown-item" href="#" @click="sortProductsByName"> Nom </a>
-      </li>
-      <li>
-        <a class="dropdown-item" href="#" @click="sortProductsByPrice" data-test-sorter-price>
-          Prix
-        </a>
-      </li>
-    </ul>
-  </div>
-</div>
+        <div class="btn-group">
+          <button
+            type="button"
+            class="btn btn-primary dropdown-toggle"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+            data-test-sorter
+          >
+            Trier par {{ sorterLabel }}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li>
+              <a class="dropdown-item" href="#" @click="sortProductsByName"> Nom </a>
+            </li>
+            <li>
+              <a class="dropdown-item" href="#" @click="sortProductsByPrice" data-test-sorter-price>
+                Prix
+              </a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
 
     <div class="text-center mt-4" data-test-loading>
@@ -146,7 +164,7 @@ fetchProducts();
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div class="row">
-      <div class="col-md-4 mb-4" v-for="item in products">
+      <div class="col-md-4 mb-4" v-for="item in filteredProducts">
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: item.id } }">
           <img

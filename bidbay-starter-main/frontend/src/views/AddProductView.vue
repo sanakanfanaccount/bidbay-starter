@@ -33,7 +33,7 @@ async function addProduct(event) {
       method: "POST",
       headers: {
       "Content-Type": "application/json",
-      "Authorization": `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjFmMmZhZGIxLTBkN2UtNDdhNy05ZDViLWVkMDMxZDY2NWQzZSIsInVzZXJuYW1lIjoiYWxpY2UiLCJlbWFpbCI6ImFsaWNlQGV4YW1wbGUuY29tIiwiYWRtaW4iOmZhbHNlLCJpYXQiOjE2Nzk2MTMwMzh9.KcT42jbNXfNR-0I-bTc_qNdAuCid640tXpkzUtDCoao`
+      "Authorization": `Bearer ${token}`
       },
       body: JSON.stringify({
         "name": productName,
