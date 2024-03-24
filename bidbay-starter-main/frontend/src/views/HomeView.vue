@@ -164,7 +164,7 @@ fetchProducts();
     <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
       Une erreur est survenue lors du chargement des produits.
     </div>
-    <div class="row">
+    <div v-if="!loading" class="row">
       <div class="col-md-4 mb-4" v-for="item in filteredProducts">
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: item.id } }">
