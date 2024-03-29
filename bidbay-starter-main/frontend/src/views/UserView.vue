@@ -4,7 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 
 import { useAuthStore } from "../store/auth";
 
-const { isAuthenticated, isAdmin } = useAuthStore();
+const { isAuthenticated, isAdmin, userData } = useAuthStore();
 
 const user = ref({});
 const bids = ref([]);
@@ -14,7 +14,9 @@ const route = useRoute();
 const loading = ref(true);
 const error = ref(false);
 
-let userId = computed(() => route.params.userId);
+const userID_DATA = computed(() => userData.value ? userData.value.id : null);
+const userID_URL = computed(() => route.params.userId);
+const url_admin = ref(false);
 
 /**
  * @param {Date} date
@@ -23,8 +25,8 @@ const formatDate = (date) => {
   return new Date(date).toLocaleDateString();
 };
 
-
 async function fetchData(link) {
+  if (!link) return;
   try {
     const response = await fetch("http://localhost:3000/api/users/" + link);
     const data = await response.json();
@@ -34,6 +36,9 @@ async function fetchData(link) {
     } else {
       user.value = data;
       bids.value = data.bids;
+      if (data.admin) {
+        url_admin.value = true;
+      }
     }
   } catch (e) {
     error.value = true;
@@ -43,15 +48,20 @@ async function fetchData(link) {
   }
 }
 
-fetchData(userId.value);
+fetchData(userID_DATA.value ? userID_DATA.value : userID_URL.value);
 
 </script>
 
+
+
 <template>
+
+
   <div>
+
     <h1 class="text-center" data-test-username>
       Utilisateur {{user.username}}
-      <span v-if="isAdmin" class="badge rounded-pill bg-primary" data-test-admin>Admin</span>
+      <span v-if="isAdmin || url_admin" class="badge rounded-pill bg-primary" data-test-admin>Admin</span>
     </h1>
     <div v-if="loading" class="text-center" data-test-loading>
       <span class="spinner-border"></span>
@@ -60,16 +70,14 @@ fetchData(userId.value);
     <div v-if="error" class="alert alert-danger mt-3" data-test-error>
       Une erreur est survenue
     </div>
-    <div data-test-view>
+    <div v-if="!loading && !error"  data-test-view>
       <div class="row">
         <div class="col-lg-6">
           <h2>Produits</h2>
           <div class="row">
             <div
               class="col-md-6 mb-6 py-2"
-              v-for="product in user.products"
-              :key="i"
-              data-test-product
+              v-for="product in user.products"data-test-product
             >
               <div class="card">
                 <RouterLink
