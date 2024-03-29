@@ -4,7 +4,6 @@ import { ref, computed } from "vue";
 const loading = ref(false);
 const error = ref(false);
 const products = ref([]);
-const productsOne = ref({});
 const sorterLabel = ref("nom");
 const searchQuery = ref("");
 
@@ -28,9 +27,6 @@ async function fetchProducts() {
       throw new Error(data.error);
     } else {
       products.value = data;
-      for (const product of data) {
-        await fetchName(product.id);
-      }
       console.error("Data récupérée");
       sortProductsByName()
     }
@@ -42,34 +38,9 @@ async function fetchProducts() {
   }
 }
 
-// récupère les produits un par un
-
-async function fetchName(link) {
-  try {
-    const response = await fetch("http://localhost:3000/api/products/" + link);
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error);
-    } else {
-      productsOne.value[link] = data;
-      const sellerUsername = data.seller.username;
-      const lastBid = await fetchLastBid(link);
-      productsOne.value[link].lastBid = lastBid;
-      return sellerUsername;
-    }
-  } catch (e) {
-    error.value = true;
-    console.error("Une erreur est survenue lors du chargement des données :", e);
-  } finally {
-    loading.value = false;
-  }
-}
-
 // leurs dernier bid
 
-async function fetchLastBid(productId) {
-    const product = productsOne.value[productId];
+function fetchLastBid(product) {
     if (!product || !product.bids || product.bids.length === 0) {
         return product.originalPrice;
     } else {
@@ -99,19 +70,15 @@ function sortProductsByName() {
 
 function sortProductsByPrice() {
   products.value.sort((a, b) => {
-    const priceA = productsOne.value[a.id].lastBid;
-    const priceB = productsOne.value[b.id].lastBid;
     sorterLabel.value = "prix";
-    return priceA - priceB;
+    return fetchLastBid(a) - fetchLastBid(b);
   });
 }
-
 fetchProducts(); 
 </script>
 
 
 <template>
-
   <div>
     <h1 class="text-center mb-4">Liste des produits</h1>
 
@@ -165,7 +132,7 @@ fetchProducts();
       Une erreur est survenue lors du chargement des produits.
     </div>
     <div v-if="!loading" class="row">
-      <div class="col-md-4 mb-4" v-for="item in filteredProducts">
+      <div class="col-md-4 mb-4" v-for="item in filteredProducts" data-test-product>
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: item.id } }">
           <img
@@ -189,13 +156,13 @@ fetchProducts();
               <RouterLink
                 data-test-product-seller
                 :to="{ name: 'User', params: { userId: item.seller.id } }">
-                {{ productsOne[item.id] ? productsOne[item.id].seller.username : 'Chargement...' }}
+                {{ products[item.id] ? products[item.id].seller.username : 'Chargement...' }}
               </RouterLink>
             </p>
             <p class="card-text" data-test-product-date>
               En cours jusqu'au <br> {{ item.endDate.split('T')[0] }}
             </p>
-            <p class="card-text" data-test-product-price>Prix actuel : {{ productsOne[item.id] ? productsOne[item.id].lastBid : 'Chargement...' }} €</p>
+            <p class="card-text" data-test-product-price>Prix actuel : {{ item.id ? fetchLastBid(item) : 'Chargement...' }} €</p>
           </div>
         </div>
       </div>
