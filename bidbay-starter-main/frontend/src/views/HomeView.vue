@@ -23,9 +23,10 @@ async function fetchProducts() {
     const response = await fetch("http://localhost:3000/api/products");
     const data = await response.json();
 
-    if (!response.ok) {
+    if (!response.ok || data.length<1) {
       throw new Error(data.error);
     } else {
+      console.log(data.length)
       products.value = data;
       console.error("Data récupérée");
       sortProductsByName()
@@ -131,7 +132,7 @@ fetchProducts();
     <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
       Une erreur est survenue lors du chargement des produits.
     </div>
-    <div v-if="!loading" class="row">
+    <div v-if="!loading && !error" class="row">
       <div class="col-md-4 mb-4" v-for="item in filteredProducts" data-test-product>
         <div class="card">
           <RouterLink :to="{ name: 'Product', params: { productId: item.id } }">
