@@ -74,7 +74,7 @@ fetchData(userID_DATA.value ? userID_DATA.value : userID_URL.value);
       <div class="row">
         <div class="col-lg-6">
           <h2>Produits</h2>
-          <div class="row">
+          <div v-if="!loading" class="row">
             <div
               class="col-md-6 mb-6 py-2"
               v-for="product in user.products"data-test-product

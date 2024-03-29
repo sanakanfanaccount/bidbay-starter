@@ -2,11 +2,17 @@
 import { ref } from "vue";
 import { useRoute } from "vue-router";
 
+import { useAuthStore } from "../store/auth";
+
+const { isAuthenticated, isAdmin, userData } = useAuthStore();
+
 const route = useRoute();
 const Product = ref({});
 const productId = ref(route.params.productId);
 const countdown = ref("");
 const bids = ref([]);
+
+const nobids = ref(false);
 
 const loading = ref(false);
 const error = ref(false);
@@ -33,6 +39,10 @@ async function fetchProducts(link) {
         bidderNames.forEach((name, index) => {
           bids.value[index].bidderName = name;
         });
+        if (bids.value.length < 1) {
+          nobids.value = true;
+        }
+        console.error(bids.value.length);
       }
       updateCountdown(data.endDate);
     }
@@ -50,6 +60,7 @@ async function fetchName(link) {
     const data = await response.json();
     return(data.username);
   } catch (e) {
+    error.value = true;
     console.error("Une erreur est survenue lors du chargement des données :", e);
   }
 }
@@ -76,13 +87,15 @@ function updateCountdown(endDate) {
 }
 
 fetchProducts(productId.value);
+
+
 </script>
 
 
 <template>
   
 
-  <div class="row">
+  <div v-if="!error || !loading" class="row">
     <div v-if="loading" class="text-center mt-4" data-test-loading>
       <div class="spinner-border" role="status">
         <span class="visually-hidden">Chargement...</span>
@@ -92,7 +105,7 @@ fetchProducts(productId.value);
     <div v-if="error" class="alert alert-danger mt-4" role="alert" data-test-error>
       Une erreur est survenue lors du chargement des produits.
     </div>
-    <div class="row" data-test-product>
+    <div v-if="!loading && !error" class="row" data-test-product>
       <!-- Colonne de gauche : image et compte à rebours -->
       <div class="col-lg-4">
         <img
@@ -184,7 +197,8 @@ fetchProducts(productId.value);
             </tr>
           </tbody>
         </table>
-        <p data-test-no-bids>Aucune offre pour le moment</p>
+        <p v-if="nobids && !loading" data-test-no-bids>Aucune offre pour le moment</p>
+
 
         <form data-test-bid-form>
           <div class="form-group">
