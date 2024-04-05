@@ -3,6 +3,7 @@ import { ref } from "vue";
 import { useRoute } from "vue-router";
 
 import { useAuthStore } from "../store/auth";
+import { computed } from "vue";
 
 const { isAuthenticated, isAdmin, userData } = useAuthStore();
 
@@ -86,14 +87,14 @@ function updateCountdown(endDate) {
   }, 1000);
 }
 
-fetchProducts(productId.value);
 
+
+fetchProducts(productId.value);
 
 </script>
 
 
 <template>
-  
 
   <div v-if="!error || !loading" class="row">
     <div v-if="loading" class="text-center mt-4" data-test-loading>
@@ -208,6 +209,7 @@ fetchProducts(productId.value);
               class="form-control"
               id="bidAmount"
               data-test-bid-form-price
+              v-model="bidAmount"
             />
             <small class="form-text text-muted">
               Le montant doit être supérieur à 10 €.
@@ -216,9 +218,8 @@ fetchProducts(productId.value);
           <button
             type="submit"
             class="btn btn-primary"
-            disabled
-            data-test-submit-bid
-          >
+            :disabled = "bidAmount?bidAmount<10:true"
+            data-test-submit-bid>
             Enchérir
           </button>
         </form>
