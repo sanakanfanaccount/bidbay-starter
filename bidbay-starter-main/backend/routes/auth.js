@@ -12,6 +12,7 @@ import { getDetails } from '../validators/index.js'
 
 const router = express.Router()
 
+
 /**
  * @typedef {object} RegisterRequestBody
  * @property {string} username
@@ -22,7 +23,7 @@ const router = express.Router()
 /**
  * Endpoint pour la création d'un nouvel utilisateur
  * @param {import('express').Request<{}, {}, RegisterRequestBody>} req
- * @param {import('express').Response res
+ * @param {import('express').Response res}
  */
 router.post('/api/auth/register', async (req, res) => {
   try {
@@ -84,7 +85,7 @@ router.post('/api/auth/register', async (req, res) => {
 /**
  * Endpoint pour l'authentification d'un utilisateur enregistré
  * @param {import('express').Request<{}, {}, LoginRequestBody>} req
- * @param {import('express').Response res
+ * @param {import('express').Response res}
  */
 router.post('/api/auth/login', async (req, res) => {
   /** @type {LoginRequestBody} */
