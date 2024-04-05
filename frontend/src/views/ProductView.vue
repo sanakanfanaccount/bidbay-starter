@@ -190,7 +190,7 @@ fetchProducts(productId.value);
               <td data-test-bid-price>{{ bid.price }} €</td>
               <td data-test-bid-date>{{ formatDate(bid.date) }}</td>
             <td>
-            <button class="btn btn-danger btn-sm" data-test-delete-bid>
+            <button v-if="isAdmin || userData.id == bid.bidderId" class="btn btn-danger btn-sm" data-test-delete-bid>
               Supprimer
             </button>
             </td>
