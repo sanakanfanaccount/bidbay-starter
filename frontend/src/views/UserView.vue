@@ -48,7 +48,7 @@ async function fetchData(link) {
   }
 }
 
-fetchData(userID_DATA.value ? userID_DATA.value : userID_URL.value);
+fetchData(userID_URL.value != "me" ? userID_URL.value : userID_DATA.value);
 
 </script>
 
