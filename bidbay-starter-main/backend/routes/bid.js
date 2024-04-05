@@ -54,31 +54,39 @@ router.delete('/api/bids/:bidId', authMiddleware, async (req, res) => {
  * 401 -> Token invalide (Authentification manquante)
  */
 router.post('/api/products/:productId/bids', authMiddleware, async (req, res) => {
-  try {
-    // Essayer de trouver un produit avec l'ID spécifié
-    /** @type {ProductObject | null} */
-    const product = await Product.findOne({ where: { id: req.params.productId } })
 
-    // Si le produit n'existe pas
-    if (!product) {
-      return res.sendStatus(404)
-    }
-
-    /** @type {BidObject | null} */
-    // Créer une nouvelle enchère
-    const bid = await Bid.create({
-      productId: product.id,
-      bidderId: req.user.id,
-      date: new Date(),
-    })
-
-    // Renvoyer OK avec l'enchère créée
-    res.status(201).json(bid)
-  } catch (error) {
-    // Gérer les erreurs
-    console.error('Error:', error)
-    res.status(400).json({ error: 'Invalid or missing fields' })
+  //Essayer de récupérer un Product avec l'ID passé
+  /** @type {ProductObject | null} */
+  let product= await Product.findOne({where : {id : req.params.productId}}, {include : {all:true}})
+  
+  //Si le Product n'est pas trouvé
+  if(product == null){
+    //Renvoyer 404 non trouvé
+    res.sendStatus(404)
   }
+  else{
+  try{  
+  //Créer un Bid avec les données passées dans le body de la requete
+  /** @type {BidObject | null} */
+  let bid = req.body;
+  bid.productId = product.id;
+  bid.bidderId = req.user.id;
+  bid.date = new Date();
+
+  //Essayer de sauvegarder le Bid
+  /** @type {BidObject | null} */
+  let b2 = await Bid.create(bid)
+  //Retourner les données du Bid créer
+  res.status(201).json(b2)
+  }
+  catch(e){
+    //Retourner 400 avec les détails de l'erreur
+    res.status(400).json({ error: "Invalid or missing fields" , details : e}).send()
+
+  }
+}
+
 })
+
 
 export default router
