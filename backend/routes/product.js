@@ -31,19 +31,19 @@ router.get('/api/products', async (req, res, next) => {
  * @param {import('express').Response} res
  */
 router.get('/api/products/:productId', async (req, res) => {
-  try {
     /** @type {ProductObject | null} */
     // Trouver un produit par son ID avec toutes les associations
-    const product = await Product.findOne({ where: { id: req.params.productId }, include: { all: true, nested: true } })
+    await Product.findOne({ where: { id: req.params.productId }, include: { all: true, nested: true } })
+    .then( async (product) => {
     if (product) {
       res.status(200).json(product)
     } else {
       res.status(404).send()
     }
-  } catch (error) {
+    }).catch((error)=>{
     console.error('Error:', error)
-    res.sendStatus(500)
-  }
+    res.sendStatus(500);
+  });
 })
 
 /**

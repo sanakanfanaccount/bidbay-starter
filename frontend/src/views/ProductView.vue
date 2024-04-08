@@ -25,11 +25,11 @@ function formatDate(date) {
 
 
 async function fetchProducts(link) {
-  try {
+  
     loading.value = true;
-    const response = await fetch("http://localhost:3000/api/products/" + link);
+    await fetch("http://localhost:3000/api/products/" + link).then( async (response) => {
+    loading.value = false;
     const data = await response.json();
-
     if (!response.ok) {
       throw new Error(data.error);
     } else {
@@ -47,13 +47,11 @@ async function fetchProducts(link) {
       }
       updateCountdown(data.endDate);
     }
-  } catch (e) {
+  }).catch((e)=>{
     error.value = true;
-    console.error("Une erreur est survenue lors du chargement des données :", e);
-  } finally {
-    loading.value = false;
-  }
-}
+    //console.error("Une erreur est survenue lors du chargement des données :", e);
+  });
+  } 
 
 async function fetchName(link) {
   try {
@@ -62,7 +60,7 @@ async function fetchName(link) {
     return(data.username);
   } catch (e) {
     error.value = true;
-    console.error("Une erreur est survenue lors du chargement des données :", e);
+    //console.error("Une erreur est survenue lors du chargement des données :", e);
   }
 }
 
@@ -199,7 +197,6 @@ fetchProducts(productId.value);
           </tbody>
         </table>
         <p v-if="nobids && !loading" data-test-no-bids>Aucune offre pour le moment</p>
-
 
         <form data-test-bid-form>
           <div class="form-group">
