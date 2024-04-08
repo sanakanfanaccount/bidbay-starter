@@ -157,7 +157,7 @@ fetchProducts();
               <RouterLink
                 data-test-product-seller
                 :to="{ name: 'User', params: { userId: item.seller.id } }">
-                {{ products[item.id] ? products[item.id].seller.username : 'Chargement...' }}
+                {{ item.id ? item.seller.username : 'Chargement...' }}
               </RouterLink>
             </p>
             <p class="card-text" data-test-product-date>
